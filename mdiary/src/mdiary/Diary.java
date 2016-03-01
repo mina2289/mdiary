@@ -12,18 +12,17 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Diary {
+	public ArrayList<String> strDiary = new ArrayList<String>();
 	public Diary() {
-		Database db = new Database();
-		getDiarydb(db.getconn()); //debug
-		db.closeconn();
+		
 	}
 	
 	/*
 	 * Get diary input.
 	 */
 	void getInput() {
-		ArrayList<String> strDiary = new ArrayList<String>();
-		SimpleDateFormat formatDate = new SimpleDateFormat("yyyy/MM/dd E 'at' hh:mm:ss a zzz");
+		strDiary = new ArrayList<String>();
+		SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd E 'at' hh:mm:ss a zzz");
 		
 		System.out.println("Mina's Diary " + "\n" + formatDate.format(new Date()));
 		System.out.println("Enter \"end\" when finish editing." + "\n" + "Start writing:");
@@ -32,9 +31,8 @@ public class Diary {
 			String input;
 			
 			while((input = br.readLine()) != null){
-				//System.out.println(input);
-				strDiary.add(input);
 				if (input.contentEquals("end")) break;
+				strDiary.add(input);
 			}
 			for (String str: strDiary){
 				System.out.println(str);
@@ -44,24 +42,17 @@ public class Diary {
 			io.printStackTrace();
 		}	
 	}
-	public void saveDiarydb(Connection conndb, ArrayList<String> strDiary) {
-		
-		
-	}
-	
 	
 	/*
 	 * Retrieve data from database
 	 */
-	public void getDiarydb(Connection conndb) {
-		Statement stmt = null; 
-	    try {
-			stmt = conndb.createStatement();
-		
+	public void getDiarydb(Connection conndb, String queryStr) {
+		Statement stmt = null;
+		ResultSet sqlResult = null;
+		try {
 			// Set up query to database
-		    String query;
-		    query = "SELECT id, txt, date FROM testtable";
-		    ResultSet sqlResult = stmt.executeQuery(query);
+	    	stmt = conndb.createStatement();
+		    sqlResult = stmt.executeQuery(queryStr);
 		
 		    // Extract data from the query result
 		    while(sqlResult.next()){
@@ -75,14 +66,59 @@ public class Diary {
 		       System.out.println("txt: " + txt);
 		       System.out.println("date: " + date + "\n");
 		    }
-		    // Clean-up environment
-		    sqlResult.close();
-		    stmt.close();
-		    conndb.close();
+		    
 	    } catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+		    try {
+		    	// Clean-up environment
+				sqlResult.close();
+				stmt.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		    
 		}
 	    
+	}
+	
+	/*
+	 * Insert data into database
+	 */
+	public void insertDiarydb(Connection conndb, String dbtable, int tableindex) {//, ArrayList<String> strDiary) {
+		Statement stmt = null;
+		
+		try {
+			// Insert data into database
+			stmt = conndb.createStatement();
+			StringBuilder txt = new StringBuilder();
+			for (String str: strDiary){
+				txt.append(str);
+			}
+			System.out.println(txt);
+			
+			//"yyyy-MM-dd E 'at' hh:mm:ss a zzz"
+			String insertStr = "INSERT INTO " +  dbtable + " VALUES ('" + ++tableindex + "', '" + txt.toString() 
+				+ "', '" + new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()) 
+					+ "')";
+		    
+			System.out.println(insertStr);
+		    stmt.executeUpdate(insertStr);
+		    
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+		    	// Clean-up environment
+				stmt.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 	}
 }
