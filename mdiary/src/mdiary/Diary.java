@@ -9,14 +9,11 @@ import java.util.Date;
 
 public class Diary {
 	public ArrayList<String> strDiary = new ArrayList<String>();
-	public Diary() {
-		
-	}
 	
 	/*
 	 * Get diary input.
 	 */
-	void getInput() {
+	void getUserInput() {
 		strDiary = new ArrayList<String>();
 		SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd E 'at' hh:mm:ss a zzz");
 		
