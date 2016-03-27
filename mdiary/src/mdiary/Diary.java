@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Diary {
-	public ArrayList<String> strDiary = new ArrayList<String>();
+	private ArrayList<String> strDiary = new ArrayList<String>();
 	
 	/*
 	 * Get diary input.

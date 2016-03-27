@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class Database {
 	private static Connection conn = null; 
@@ -17,15 +18,65 @@ public class Database {
 	private String DBTable = null;
 	private int rowNum = 0;
 	
+	/*
+	 * Init database.
+	 */
 	public Database(String dbname, String user, String passwd) {
 		setDBname(dbname); // mysql database name
 		setUser(user); 
 	    setPasswd(passwd); 
 	}
 	
-	public Database(String dbtable) {
-		setDBTable(dbtable);
+	/*
+	 * Set table.
+	 */
+	public void initDBTable(String dBTable) {
+		DBTable = dBTable;
 	}
+	
+	/*
+	 * Update Database Class Data:rowNum whenever modify the db table
+	 */
+	public void updateTableData() {
+		setRowNum(updateRowNum());
+	}
+	
+	/*
+	 * Get row number in the db table. 
+	 */
+	public int updateRowNum() {
+		Statement stmt = null;
+		ResultSet sqlResult = null;
+		int num = 0;
+		try {
+			// Set up query to database
+	    	stmt = conn.createStatement();
+		    sqlResult = stmt.executeQuery("SELECT COUNT(*) FROM " + this.getDBTable());
+		
+		    // Extract data from the query result
+		    while(sqlResult.next()){
+		       // Retrieve by column name
+		       num = sqlResult.getInt("COUNT(*)");
+		       
+		       // Display values
+		       System.out.println("Number: " + num);
+		    }
+	    } catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+		    try {
+		    	// Clean-up environment
+				sqlResult.close();
+				stmt.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return num;
+	}
+
 	
 	public Connection setconn() {
 		System.out.println("Set up database connection." + DBname + User + Passwd);
@@ -65,19 +116,16 @@ public class Database {
 		}
 	}
 
-	/*
-	 * Initialize Database Class Data after conection is up
-	 */
-	public void initDBData() {
-		setRowNum(getInitRowNum());
-	}
+	
 	
 	/*
 	 * DEBUG: Retrieve data from database
 	 */
-	public void getDiarydb(Connection conndb, String queryStr) {
+	public List<List<String>> getDiarydb(Connection conndb, String queryStr) {
 		Statement stmt = null;
 		ResultSet sqlResult = null;
+		List<List<String>> history = new ArrayList<List<String>>();
+		
 		try {
 			// Set up query to database
 	    	stmt = conndb.createStatement();
@@ -85,13 +133,20 @@ public class Database {
 		
 		    // Extract data from the query result
 		    while(sqlResult.next()){
+		    	List<String> historyDay = new ArrayList<String>(); 
 		       // Retrieve by column name
 		       int id  = sqlResult.getInt("id");
 		       String date = sqlResult.getString("date");
 		       String week = sqlResult.getString("week");
 		       String txt = sqlResult.getString("txt");
 		       String url = sqlResult.getString("url");
-		
+		       historyDay.add(String.valueOf(id));
+		       historyDay.add(date);
+		       historyDay.add(week);
+		       historyDay.add(txt);
+		       historyDay.add(url);
+		       
+		       history.add(historyDay);
 		       // Display values
 		       System.out.println("ID: " + id);
 		       System.out.println("date: " + date);
@@ -115,7 +170,7 @@ public class Database {
 			}
 		    
 		}
-	    
+		return history;
 	}
 	
 	/*
@@ -199,49 +254,9 @@ public class Database {
 	public static void setPasswd(String passwd) {
 		Passwd = passwd;
 	}
-
-	public void setDBTable(String dBTable) {
-		DBTable = dBTable;
-	}
 	
 	public String getDBTable() {
 		return DBTable;
-	}
-
-	public int getInitRowNum() {
-		Statement stmt = null;
-		ResultSet sqlResult = null;
-		int num = 0;
-		try {
-			// Set up query to database
-	    	stmt = conn.createStatement();
-		    sqlResult = stmt.executeQuery("SELECT COUNT(*) FROM " + this.getDBTable());
-		
-		    // Extract data from the query result
-		    while(sqlResult.next()){
-		       // Retrieve by column name
-		       num = sqlResult.getInt("COUNT(*)");
-		       
-		       // Display values
-		       System.out.println("Number: " + num);
-		    }
-		    
-	    } catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-		    try {
-		    	// Clean-up environment
-				sqlResult.close();
-				stmt.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		    
-		}
-		
-		return num;
 	}
 
 	public int getRowNum() {
